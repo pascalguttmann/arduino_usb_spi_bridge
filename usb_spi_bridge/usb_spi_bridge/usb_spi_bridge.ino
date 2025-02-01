@@ -1,6 +1,7 @@
 #include <SPI.h>
 
 #define LEN(x) (sizeof(x) / sizeof(x[0]))
+#define UINT8_MAX (256U)
 
 const uint8_t cs_pin = 10;
 const uint8_t copi_pin = 11;
@@ -15,8 +16,15 @@ void setup() {
 }
 
 void loop() {
-  uint8_t data[] = {0x01, 0xaa, 0xF1};
-  uint8_t data_len = LEN(data);
+  uint8_t data[2*UINT8_MAX] = {};
+  uint32_t data_len = LEN(data);
+
+  read_serial_line(data, &data_len);
+  Serial.print("Read: ");
+  print_buf_as_hexstring(data, data_len);
+  Serial.print("\n");
+
+  // TODO: hexstring_to_uint8arr();
   
   Serial.print("TX: ");
   print_buf_as_hexstring(data, data_len);
@@ -26,8 +34,27 @@ void loop() {
   Serial.print("\tRX: ");
   print_buf_as_hexstring(data, data_len);
   Serial.print("\n");
+}
 
-  delay(1000);
+// buf is overwritten by serial data (excluding newline), sets buf_len to the number of bytes read
+void read_serial_line(uint8_t* buf, uint32_t* buf_len) {
+  uint32_t i = 0;
+  while (i < *buf_len) {
+    spinlock_for_serial_input();
+    uint8_t c = Serial.read();
+    if (c == '\n') {
+      break;
+    }
+    else {
+      buf[i++] = c;
+    }
+  }
+  *buf_len = i;
+}
+
+void spinlock_for_serial_input(void){
+  while (Serial.available() == 0) {}
+  return;
 }
 
 void print_buf_as_hexstring(uint8_t* data, uint8_t data_len) {
@@ -35,6 +62,7 @@ void print_buf_as_hexstring(uint8_t* data, uint8_t data_len) {
   for (uint8_t i = 0; i < data_len; i++) {
     Serial.print(data[i], HEX);
   }
+  return;
 }
 
 /* data buffer contains spi transfer data (tx before function call, rx after function call)
