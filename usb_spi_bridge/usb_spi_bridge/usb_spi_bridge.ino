@@ -105,6 +105,9 @@ void spinlock_for_serial_input(void){
 void print_buf_as_hexstring(uint8_t* data, uint8_t data_len) {
   Serial.print("0x");
   for (uint8_t i = 0; i < data_len; i++) {
+    if (data[i] < 16){
+      Serial.print("0");
+    }
     Serial.print(data[i], HEX);
   }
   return;
