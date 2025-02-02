@@ -36,6 +36,54 @@ void loop() {
   Serial.print("\n");
 }
 
+uint8_t ascii_hex_to_nibble(uint8_t ascii_hex){
+  if (ascii_hex >= '0' && ascii_hex <= '9') {
+    return ascii_hex - '0';
+  }
+  else if (ascii_hex >= 'a' && ascii_hex <= 'f') {
+    return ascii_hex - 'a' + 10;
+  }
+  else if (ascii_hex >= 'A' && ascii_hex <= 'F') {
+    return ascii_hex - 'A' + 10;
+  }
+  else {
+    return 0xFF;
+  }
+}
+
+/*
+ * take as input an array `hexstring` of length `hexstring_len`. `hexstring_len` must be a even.
+ * Each uint8_t contains a ascii hexadecimal digit, that shall be converted to its binary
+ * representation (e.g. 'c' to 1100, '3' to 0011, etc).
+ * The binary representation shall be stored in the output array `arr` and the amount of bytes 
+ * written to `arr` shall be stored in `arr_len`.
+ * `arr_len` specifies the maximum write size of `arr`.
+ */
+void hexstring_to_uint8(uint8_t* hexstring, uint32_t hexstring_len, uint8_t* arr, uint32_t* arr_len) {
+  if (2 * (*arr_len) < hexstring_len) return;
+  
+  uint32_t bytes_written = 0;
+  uint8_t out_byte = 0;
+  uint8_t nibble = 0;
+
+  for (uint32_t i = 0; i < hexstring_len; i++) {
+      nibble = ascii_hex_to_nibble(hexstring[i]);
+
+      if (i % 2 == 0) {
+          out_byte = nibble << 4;
+      } else {
+          out_byte |= nibble;
+          arr[bytes_written++] = out_byte;
+      }
+  }
+
+  if (hexstring_len % 2 != 0) {
+      arr[bytes_written++] = out_byte;
+  }
+
+  *arr_len = bytes_written;
+}
+
 // buf is overwritten by serial data (excluding newline), sets buf_len to the number of bytes read
 void read_serial_line(uint8_t* buf, uint32_t* buf_len) {
   uint32_t i = 0;
