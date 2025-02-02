@@ -1,7 +1,15 @@
 #include <SPI.h>
 
+#define FALSE (0)
+#define TRUE (!FALSE)
+#if TRUE == FALSE
+#error "Preprocessor definition inconsistent: TRUE == FALSE"
+#endif
+
 #define LEN(x) (sizeof(x) / sizeof(x[0]))
 #define UINT8_MAX (256U)
+
+#define DEBUG_PRINT_HUMAN_READABLE FALSE
 
 const uint8_t cs_pin = 10;
 const uint8_t copi_pin = 11;
@@ -12,7 +20,9 @@ void setup() {
   Serial.begin(115200);
   pinMode(cs_pin, OUTPUT);
   SPI.begin();
+#if DEBUG_PRINT_HUMAN_READABLE == TRUE
   Serial.println("Setup finished.");
+#endif /* #if DEBUG_PRINT_HUMAN_READABLE == TRUE */
 }
 
 void loop() {
@@ -23,12 +33,17 @@ void loop() {
 
   read_serial_line(hexstring, &hexstring_len);
   hexstring_to_uint8(hexstring, hexstring_len, data, &data_len);
+  
+#if DEBUG_PRINT_HUMAN_READABLE == TRUE
   Serial.print("TX: ");
   print_buf_as_hexstring(data, data_len);
-  
+#endif /* #if DEBUG_PRINT_HUMAN_READABLE == TRUE */
+
   spi_transfer(cs_pin, data, data_len);
   
+#if DEBUG_PRINT_HUMAN_READABLE == TRUE
   Serial.print("\tRX: ");
+#endif /* #if DEBUG_PRINT_HUMAN_READABLE == TRUE */
   print_buf_as_hexstring(data, data_len);
   Serial.print("\n");
 }
@@ -103,7 +118,9 @@ void spinlock_for_serial_input(void){
 }
 
 void print_buf_as_hexstring(uint8_t* data, uint8_t data_len) {
+#if DEBUG_PRINT_HUMAN_READABLE == TRUE
   Serial.print("0x");
+#endif /* #if DEBUG_PRINT_HUMAN_READABLE == TRUE */
   for (uint8_t i = 0; i < data_len; i++) {
     if (data[i] < 16){
       Serial.print("0");
