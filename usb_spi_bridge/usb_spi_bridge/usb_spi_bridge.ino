@@ -16,16 +16,13 @@ void setup() {
 }
 
 void loop() {
-  uint8_t data[2*UINT8_MAX] = {};
+  uint8_t hexstring[2*UINT8_MAX] = {};
+  uint32_t hexstring_len = LEN(hexstring);
+  uint8_t data[UINT8_MAX] = {};
   uint32_t data_len = LEN(data);
 
-  read_serial_line(data, &data_len);
-  Serial.print("Read: ");
-  print_buf_as_hexstring(data, data_len);
-  Serial.print("\n");
-
-  // TODO: hexstring_to_uint8arr();
-  
+  read_serial_line(hexstring, &hexstring_len);
+  hexstring_to_uint8(hexstring, hexstring_len, data, &data_len);
   Serial.print("TX: ");
   print_buf_as_hexstring(data, data_len);
   
