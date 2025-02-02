@@ -118,11 +118,7 @@ void spi_transfer(uint8_t cs_pin, uint8_t* data, uint8_t data_len) {
   SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
   digitalWrite(cs_pin, LOW);
   delayMicroseconds(10);
-
-  for (uint8_t i = 0; i < data_len; i++) {
-    data[i] = SPI.transfer(data[i]);
-  }
-
+  SPI.transfer(data, data_len);
   delayMicroseconds(10);
   digitalWrite(cs_pin, HIGH);
   SPI.endTransaction();
