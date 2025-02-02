@@ -36,8 +36,8 @@ E.g.: `8f\n`, `1234\n`, ... but *not* `123\n`.
 
 1. Send `8f02\n` via USB from PC to Arduino
 2. Arduino transfers bits `1000 1111 0000 0010` via SPI to peripheral  
-   During the SPI transfer a response of the peripheral is received, e.g.: `1100 1100 1100 1111`
-3. Receive `AAAF\n` via USB from Arduino to PC
+   During the SPI transfer a response of the peripheral is received, e.g.: `1101 1010 0001 1010`
+3. Receive `DA1A\n` via USB from Arduino to PC
 
 ## Pin out
 
