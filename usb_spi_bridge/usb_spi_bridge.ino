@@ -1,4 +1,4 @@
-#include <SPI.h>
+#include "SoftwareSPI.h"
 
 #define FALSE (0)
 #define TRUE (!FALSE)
@@ -9,27 +9,36 @@
 #define LEN(x) (sizeof(x) / sizeof(x[0]))
 #define UINT8_MAX (256U)
 
+#define SERIAL_IN_BUF_SIZE (2*UINT8_MAX)
+#define SPI_DATA_BUF_SIZE (UINT8_MAX)
+
 #define DEBUG_PRINT_HUMAN_READABLE FALSE
 
 const uint8_t cs_pin = 10;
-const uint8_t copi_pin = 11;
-const uint8_t cipo_pin = 12;
-const uint8_t sck_pin = 13;
+extern const uint8_t copi_pin;
+extern const uint8_t cipo_pin;
+extern const uint8_t sck_pin;
+
+uint8_t hexstring[SERIAL_IN_BUF_SIZE] = {};
+uint32_t hexstring_len = SERIAL_IN_BUF_SIZE;
+uint8_t data[SPI_DATA_BUF_SIZE] = {};
+uint32_t data_len = SPI_DATA_BUF_SIZE;
 
 void setup() {
   Serial.begin(115200);
+  digitalWrite(cs_pin, HIGH);
   pinMode(cs_pin, OUTPUT);
-  SPI.begin();
+  swspi_begin();
 #if DEBUG_PRINT_HUMAN_READABLE == TRUE
   Serial.println("Setup finished.");
 #endif /* #if DEBUG_PRINT_HUMAN_READABLE == TRUE */
 }
 
 void loop() {
-  uint8_t hexstring[2*UINT8_MAX] = {};
-  uint32_t hexstring_len = LEN(hexstring);
-  uint8_t data[UINT8_MAX] = {};
-  uint32_t data_len = LEN(data);
+  memset(hexstring, 0x00, SERIAL_IN_BUF_SIZE);
+  hexstring_len = SERIAL_IN_BUF_SIZE;
+  memset(data, 0x00, SPI_DATA_BUF_SIZE);
+  data_len = SPI_DATA_BUF_SIZE;
 
   read_serial_line(hexstring, &hexstring_len);
   hexstring_to_uint8(hexstring, hexstring_len, data, &data_len);
@@ -39,7 +48,11 @@ void loop() {
   print_buf_as_hexstring(data, data_len);
 #endif /* #if DEBUG_PRINT_HUMAN_READABLE == TRUE */
 
-  spi_transfer(cs_pin, data, data_len);
+  digitalWrite(cs_pin, LOW);
+  delayMicroseconds(1);
+  swspi_transfer_buf(data, data_len);
+  delayMicroseconds(1);
+  digitalWrite(cs_pin, HIGH);
   
 #if DEBUG_PRINT_HUMAN_READABLE == TRUE
   Serial.print("\tRX: ");
@@ -127,20 +140,5 @@ void print_buf_as_hexstring(uint8_t* data, uint8_t data_len) {
     }
     Serial.print(data[i], HEX);
   }
-  return;
-}
-
-/* data buffer contains spi transfer data (tx before function call, rx after function call)
- * MSBFIRST
- * data[0] == MSByte, data[data_len-1] == LSByte
- */
-void spi_transfer(uint8_t cs_pin, uint8_t* data, uint8_t data_len) {
-  SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-  digitalWrite(cs_pin, LOW);
-  delayMicroseconds(10);
-  SPI.transfer(data, data_len);
-  delayMicroseconds(10);
-  digitalWrite(cs_pin, HIGH);
-  SPI.endTransaction();
   return;
 }

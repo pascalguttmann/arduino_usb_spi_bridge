@@ -22,13 +22,14 @@ character is received and your data is transmitted with the below preconfigured 
 The received data is sent from the Arduino to the PC via the USB interface
 after the transfer is completed as an ascii encoded hexstring.
 
-The length of the ascii hexstring determines the length of the SPI transfer and must specify an equal number of nibbles to transfer.
-E.g.: `8f\n`, `1234\n`, ... but *not* `123\n`.
+The length of the ascii hexstring determines the length of the SPI transfer and
+must specify an equal number of nibbles to transfer. E.g.: `8f\n`, `1234\n`,
+... but *not* `123\n`.
 
 | Description | Value |
 | :---------- | :---- |
 | SPI_MODE | 0 (CPHA=0, CPOL=0) |
-| $f_{SCKL}$ | $1 MHz$ |
+| $f_{SCKL}$ | $\approx 300 kHz$ |
 | Bitorder | MSBit first |
 | Byteorder | MSByte first |
 
